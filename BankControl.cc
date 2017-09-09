@@ -1,0 +1,270 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * */
+/*                                                 */
+/*  Program:  Simple Banking System                */
+/*  Author:   Christine Laurendeau                 */
+/*  Date:     08-JUN-2016                          */
+/*                                                 */
+/*  (c) 2016 Christine Laurendeau                  */
+/*  All rights reserved.  Distribution and         */
+/*  reposting, in part or in whole, without the    */
+/*  written consent of the author, is illegal.     */
+/*                                                 */
+/* * * * * * * * * * * * * * * * * * * * * * * * * */
+
+#include "BankControl.h"
+#include "Account.h"
+#include "Customer.h"
+#include "Transaction.h"
+#include "TransArray.h"
+#include <string>
+#include <iostream>
+#include <stdio.h>
+
+
+BankControl::BankControl()
+{
+  init();
+}
+
+void BankControl::launch()
+{
+  int choice;
+
+  while (1) {
+    choice = -1;
+    view.mainMenu(choice);
+    if (choice == 1) {		// Admin menu
+      processAdmin();
+    }
+    else if (choice == 2) {	// Customer menu
+      processCust();
+    }
+    else {
+      break;
+    }
+  }
+}
+
+void BankControl::processAdmin()
+{
+  int      choice;
+  Customer *cust;
+  CustArray *customers;
+  int      custId;
+  AcctType acctType;
+  TransArray arr;
+  while (1) {
+    choice = -1;
+    view.adminMenu(choice);
+    if (choice == 1) {		// add account
+      view.readCustId(custId);
+      view.readAcctType(acctType);
+      customers = bank.getCustomers();
+      cust = customers->find(custId);
+      
+      if(cust == NULL){
+          view.printError(" Could not find customer\n Press Enter to Continue");
+      }
+      else{
+          Account *acct = new Account(cust, acctType);
+          bank.addAcct(acct);
+          view.pause();
+      }    
+    }
+    if (choice == 2) {	// print accounts
+      view.printAccounts(bank);
+      view.pause();
+    }
+    
+    
+    if(choice == 3){
+     string transactions;
+     //cout << "got here" << endl;
+     transControl.retrieve(&arr);
+     arr.toString(transactions);   
+     view.printTransactions(transactions);   
+     view.pause();
+    }
+    
+    
+    if(choice == 4){
+        
+     view.printCustomers(bank);   
+     view.pause();
+    }
+    if(choice == 5){
+     int a = view.readAcctNum();
+     bank.removeAcct(a);   
+     view.pause();
+    }
+    else {
+      break;
+    }
+  }
+}
+
+void BankControl::processCust()
+{
+  AcctList *accounts = NULL;
+  Account *acct = NULL;
+  int acctId;
+  float amount;
+  int choice;
+
+  
+  while (1) {
+    choice = -1;
+    view.custMenu(choice);
+    if (choice == 1) {	// check balance
+      acctId = view.readAcctNum();
+      accounts = bank.getAccounts();
+      acct = accounts->find(acctId);
+      if(acct == NULL){
+        view.printError("Could not find account");
+      }
+      else{
+        view.printBalance(acct->getBalance());
+      } 
+    }
+    
+    if(choice == 2){
+
+      acctId = view.readAcctNum();
+           
+      accounts = bank.getAccounts();
+      
+      acct = accounts->find(acctId);
+      
+      if(acct == NULL){
+        view.printError("Could not find account");
+      }
+      
+      else{
+
+        acct = accounts->get(acctId);
+        
+        amount = view.readAmountNum();
+        if(amount < 0){
+          view.printError("Please input a non-negative number");
+          Transaction*  transaction = new Transaction(acct->getAcctNum(), Failure, amount, DEPOSIT);
+          transControl.update(transaction);
+          view.pause();
+        }
+        else{
+          amount = amount + acct->getBalance();
+          acct->setBalance(amount);
+          Transaction*  transaction = new Transaction(acct->getAcctNum(), Success, amount, DEPOSIT);
+          transControl.update(transaction);
+          view.pause();
+
+        }
+      }
+    }
+    
+    
+    
+    
+    if(choice == 3){
+
+      acctId = view.readAcctNum();
+      
+      accounts = bank.getAccounts();
+      acct = accounts->find(acctId);
+      
+      if(acct == NULL){
+        view.printError("Could not find account");
+      }
+      
+      else{
+        acct = accounts->get(acctId);
+        amount = view.readAmountNum();
+        if(amount < 0){
+          view.printError("Please input a non-negative number");
+        }
+        else if( amount > acct->getBalance()){
+          view.printError("INSUFFICIENT FUNDS");
+          Transaction*  transaction = new Transaction(acct->getAcctNum(), Failure, amount, WITHDRAWL);
+          transControl.update(transaction);
+          view.pause();
+        }
+        else{
+          amount = acct->getBalance() - amount;
+          acct->setBalance(amount);
+          Transaction*  transaction = new Transaction(acct->getAcctNum(), Success, amount, WITHDRAWL);
+          transControl.update(transaction);
+          view.pause();
+        }
+      }
+    }
+    
+    else{
+      break; 
+    }
+    
+  }
+}
+
+void BankControl::init()
+{
+//CUSTOMERS: NOW DYNAMICALLY ALLOCATED! \o/
+
+
+  Customer *cust1 = new Customer(1001, "John");
+  bank.addCustomers(cust1);
+  Customer *cust2 = new Customer(1002, "Adam");
+  bank.addCustomers(cust2);
+  Customer *cust3 = new Customer(1003, "Rick James");
+  bank.addCustomers(cust3);
+  Customer *cust4 = new Customer(1004, "Irving");
+  bank.addCustomers(cust4);
+  Customer *cust5 = new Customer(1005, "Tom");
+  bank.addCustomers(cust5);
+  Customer *cust6 = new Customer(1006, "Aaron");
+  bank.addCustomers(cust6);
+  Customer *cust7 = new Customer(1007, "Tracy");
+  bank.addCustomers(cust7);
+  Customer *cust8 = new Customer(1008, "Gloria Rine");
+  bank.addCustomers(cust8);
+  Customer *cust9 = new Customer(1009, "Maddison");
+  bank.addCustomers(cust9);
+  Customer *cust10 = new Customer(1010, "Michelle");
+  bank.addCustomers(cust10);
+  Customer *cust11 = new Customer(1011, "Donny");
+  bank.addCustomers(cust11);
+  Customer *cust12 = new Customer(1012, "Trisha");
+  bank.addCustomers(cust12);
+
+
+  Account *acc01 = new Account(cust1, SAVINGS);
+  bank.addAcct(acc01);
+  Account *acc02 = new Account(cust1, SAVINGS);
+  bank.addAcct(acc02);
+  Account *acc03 = new Account(cust2, CHEQUING);
+  bank.addAcct(acc03);
+  Account *acc04 = new Account(cust2, SAVINGS);
+  bank.addAcct(acc04);
+  Account *acc05 = new Account(cust3, CHEQUING);
+  bank.addAcct(acc05);
+  Account *acc06 = new Account(cust3, SAVINGS);
+  bank.addAcct(acc06);
+  Account *acc07 = new Account(cust4, CHEQUING);
+  bank.addAcct(acc07);
+  Account *acc08 = new Account(cust5, CHEQUING);
+  bank.addAcct(acc08);
+  Account *acc09 = new Account(cust6, CHEQUING);
+  bank.addAcct(acc09);
+  Account *acc10 = new Account(cust7, SAVINGS);
+  bank.addAcct(acc10);
+  Account *acc11 = new Account(cust8, CHEQUING);
+  bank.addAcct(acc11);
+  Account *acc12 = new Account(cust9, CHEQUING);
+  bank.addAcct(acc12); 
+  Account *acc13 = new Account(cust10, CHEQUING);
+  bank.addAcct(acc13);
+  Account *acc14 = new Account(cust11, SAVINGS);
+  bank.addAcct(acc14);
+  Account *acc15 = new Account(cust12, SAVINGS);
+  bank.addAcct(acc15);
+
+
+}
