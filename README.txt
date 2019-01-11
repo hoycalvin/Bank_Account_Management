@@ -1,9 +1,6 @@
 -Program:bsys (simple bank system)
 
--Programmers: Calvin Hoy  &&  Ismail Yussuf
--Student #s:  100954276   &&  100963947
--Due Date: Nov 10, 2016
--Instructor: Christine Laurendeau
+-Date: Nov 10, 2016
 
 -Purpose: 
 • To practice the implementation of a simple design pattern
